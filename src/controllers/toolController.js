@@ -1,39 +1,55 @@
-const Tool = require("../models/Tool");
+const Tool = require("../models/toolModel");
 
-// Get all tools
-exports.getAllTools = async (req, res) => {
+// Fetch all tools
+exports.getTools = async (req, res) => {
   try {
-    const tools = await Tool.find().populate("createdBy", "name email");
+    const { category } = req.query;
+    const query = category ? { category } : {};
+    const tools = await Tool.find();
     res.status(200).json(tools);
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getSingleTools = async (req, res) => {
+  try {
+    const tools = await Tool.findById(req.params.id);
+    res.status(200).json(tools);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 
 // Create a new tool
 exports.createTool = async (req, res) => {
-  const { title, description, link } = req.body;
-
   try {
-    const tool = await Tool.create({
-      title,
-      description,
-      link,
-      createdBy: req.user.id,
-    });
-    res.status(201).json(tool);
+    const newTool = new Tool(req.body);
+    await newTool.save();
+    res.status(201).json(newTool);
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// Update a tool
+exports.updateTool = async (req, res) => {
+  try {
+    const updatedTool = await Tool.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    res.status(200).json(updatedTool);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 };
 
 // Delete a tool
 exports.deleteTool = async (req, res) => {
   try {
-    const tool = await Tool.findByIdAndDelete(req.params.id);
-    if (!tool) return res.status(404).json({ message: "Tool not found" });
+    await Tool.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Tool deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };

@@ -15,14 +15,12 @@ app.use(cors());
 connectDB();
 
 // Import Routes
-const authRoutes = require("./routes/authRoutes");
 const toolRoutes = require("./routes/toolRoutes");
-const blogRoutes = require("./routes/blogRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 // API Routes
-app.use("/api/auth", authRoutes);
 app.use("/api/tools", toolRoutes);
-app.use("/api/blogs", blogRoutes);
+app.use("/api/users", userRoutes);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the Career-tips API!");

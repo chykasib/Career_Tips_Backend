@@ -1,20 +1,17 @@
 const express = require("express");
 const {
-  getAllTools,
+  getTools,
   createTool,
+  updateTool,
   deleteTool,
+  getSingleTools,
 } = require("../controllers/toolController");
-const authMiddleware = require("../middleware/authMiddleware");
-
 const router = express.Router();
 
-// Get all tools
-router.get("/", getAllTools);
-
-// Create a new tool (admin only)
-router.post("/", authMiddleware, createTool);
-
-// Delete a tool (admin only)
-router.delete("/:id", authMiddleware, deleteTool);
+router.post("/create-tools", createTool);
+router.get("/", getTools);
+router.get("/:id", getSingleTools);
+router.put("/:id", updateTool);
+router.delete("/:id", deleteTool);
 
 module.exports = router;
