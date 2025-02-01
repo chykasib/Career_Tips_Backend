@@ -1,53 +1,59 @@
 const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
-const path = require("path");
 
 // Load environment variables
 dotenv.config();
 
-// Initialize app
+// Initialize Express App
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
+
+// Middleware
 app.use(express.json());
 app.use(cors());
 
 // Connect to MongoDB
 connectDB();
 
-// Import Routes
+// Import Routes (Make sure routes using `wss` are correctly imported)
 const toolRoutes = require("./routes/toolRoutes");
 const userRoutes = require("./routes/userRoutes");
 const blogRoutes = require("./routes/blogRoutes");
-
-//middlewares
-app.use("/images", express.static("uploads")); // Serve static images
-app.use("/api/blogs", blogRoutes);
-
-// Example API route
-app.get("/api/blogs", (req, res) => {
-  const blogs = [
-    {
-      _id: "1",
-      title: "Sample Blog",
-      content: "This is a sample blog.",
-      category: "Productivity",
-      image: "/uploads/sample.jpg", // Relative path to the image
-    },
-  ];
-  res.json({ blogs });
-});
+const taskRoutes = require("./routes/taskRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 // API Routes
 app.use("/api/tools", toolRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/blogs", blogRoutes);
+app.use("/api/tasks", taskRoutes);
+app.use("/api/notifications", notificationRoutes);
 
+// WebSocket Connection
+let activeSocket;
+
+io.on("connection", (socket) => {
+  console.log("User connected");
+  activeSocket = socket; // Store the active socket for later use
+
+  // You can emit events later using activeSocket.emit
+  activeSocket.emit("welcome", "Welcome to the server!");
+});
+
+// Default Route
 app.get("/", (req, res) => {
   res.send("Welcome to the Career-tips API!");
 });
 
-// Start server
+// Start Server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+module.exports = { io };
